@@ -1119,26 +1119,30 @@ func ToBoolSliceE(i interface{}) ([]bool, error) {
 
 // ToStringSliceE casts an interface to a []string type.
 func ToStringSliceE(i interface{}) ([]string, error) {
-	var a []string
+	if i == nil {
+		return []string{}, fmt.Errorf("unable to cast %#v of type %T to []string", i, i)
+	}
 
 	switch v := i.(type) {
-	case []interface{}:
-		for _, u := range v {
-			a = append(a, ToString(u))
-		}
-		return a, nil
 	case []string:
 		return v, nil
-	case string:
-		return strings.Fields(v), nil
-	case interface{}:
-		str, err := ToStringE(v)
-		if err != nil {
-			return a, fmt.Errorf("unable to cast %#v of type %T to []string", i, i)
+	}
+
+	kind := reflect.TypeOf(i).Kind()
+	switch kind {
+	case reflect.Slice, reflect.Array:
+		s := reflect.ValueOf(i)
+		a := make([]string, s.Len())
+		for j := 0; j < s.Len(); j++ {
+			val, err := ToStringE(s.Index(j).Interface())
+			if err != nil {
+				return []string{}, fmt.Errorf("unable to cast %#v of type %T to []string", i, i)
+			}
+			a[j] = val
 		}
-		return []string{str}, nil
+		return a, nil
 	default:
-		return a, fmt.Errorf("unable to cast %#v of type %T to []string", i, i)
+		return []string{}, fmt.Errorf("unable to cast %#v of type %T to []string", i, i)
 	}
 }
 

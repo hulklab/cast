@@ -1050,8 +1050,11 @@ func TestToStringSliceE(t *testing.T) {
 	}{
 		{[]string{"a", "b"}, []string{"a", "b"}, false},
 		{[]interface{}{1, 3}, []string{"1", "3"}, false},
-		{interface{}(1), []string{"1"}, false},
+		{[]int{1, 2, 3}, []string{"1", "2", "3"}, false},
+		{[]int64{1, 2, 3}, []string{"1", "2", "3"}, false},
+		{[]float64{1.1, 2.2, 3}, []string{"1.1", "2.2", "3"}, false},
 		// errors
+		{interface{}(1), []string{"1"}, true},
 		{nil, nil, true},
 		{testing.T{}, nil, true},
 	}
